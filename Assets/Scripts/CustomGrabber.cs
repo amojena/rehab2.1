@@ -18,10 +18,4 @@ public class CustomGrabber : OVRGrabber
     {
         base.Update();
     }
-
-    protected override void GrabBegin()
-    {
-        base.GrabBegin();
-        if (m_grabbedObj) sceneController.AddInteraction();
-    }
 }

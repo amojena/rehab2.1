@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: -8824732004067438165}
   - component: {fileID: 4950988136922937749}
   - component: {fileID: -4337451813623826331}
+  - component: {fileID: 992450823774840699}
   m_Layer: 0
   m_Name: Banana
   m_TagString: Fruit
@@ -29,13 +30,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4054723129776806469}
-  m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: -0, y: 0.98, z: -6.926}
-  m_LocalScale: {x: 2, y: 2, z: 2}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0, y: 1.8, z: -6.926}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &4054723129775998535
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -145,3 +146,16 @@ MonoBehaviour:
   m_snapOffset: {fileID: 0}
   m_grabPoints:
   - {fileID: -8824732004067438165}
+--- !u!65 &992450823774840699
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4054723129776806469}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 0.10405945, y: 0.04814385, z: 0.24466008}
+  m_Center: {x: 0.009912879, y: 0.024258167, z: -0.0056370213}

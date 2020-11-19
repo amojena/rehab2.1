@@ -6,201 +6,151 @@ using UnityEngine;
 public class SceneController : MonoBehaviour
 {
     [SerializeField]
-    TextMeshPro scoreTMP;
+    GameObject leftHand, rightHand;
 
     [SerializeField]
-    GameObject fruitSpawnPoint;
-
-    // Time in between two items spawning
-    [SerializeField]
-    float spawnDelay;
+    TextMeshPro text;
 
     [SerializeField]
-    Floor floor;
+    Basket basket;
 
-    [SerializeField]
-    Belt belt;
-
-    // Cube that will on collision will allow to replay the game
-    [SerializeField]
-    GameObject restartSphere;
-
-    [SerializeField]
-    Crate[] crates;
-
-    // Items that are available to spawn
-    [SerializeField]
-    GameObject[] items;
-
-    [SerializeField]
-    GameObject leftHandAnchor, rightHandAnchor;
-
-    //Private variables
-
-    int itemsInCrate = 0;
-    int itemsSpawned = 0;
-
-    float spawnTime = 0f; // stopwatch used to determine if it is time to spawn a new item
-
-    string[] tags = { "Fruit", "Vegetable", "Dairy" };
-
-    float totalHandDistance;
-    float totalTime;
-
+    Vector3 leftHandStartPos, rightHandStartPos;
     Vector3 leftHandPrevPos, rightHandPrevPos;
-    Vector3 leftStartPos, rightStartPos;
-    float maxDistance;
+    Vector3 leftHandDist, rightHandDist;
+    Vector3 leftHandMaxDist, rightHandMaxDist;
 
-    int interactions = 0;
-    bool gameOver = false;
+    int fruitsReq, vegReq, dairyReq, totalReqs;
+
+    float totalTime;
 
     // Start is called before the first frame update
     void Start()
     {
-        ShuffleTags();
-        totalHandDistance = 0f;
+        leftHandStartPos = leftHand.transform.position;
+        rightHandStartPos = rightHand.transform.position;
+
+        leftHandPrevPos = leftHandStartPos;
+        rightHandPrevPos = rightHandStartPos;
+
+        leftHandDist = Vector3.zero;
+        rightHandDist = Vector3.zero;  
+
+        leftHandMaxDist = Vector3.zero;
+        rightHandMaxDist = Vector3.zero;  
+
+        fruitsReq = Random.Range(0, 4);
+        dairyReq = Random.Range(0, 4);
+        vegReq = Random.Range(0, 4);
+        totalReqs = fruitsReq + dairyReq + vegReq;
+        basket.UpdateRequirements(new Vector3(fruitsReq, dairyReq, vegReq));
+
         totalTime = 0f;
-        maxDistance = 0f;
-        SpawnItem();
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (gameOver) return;
-
-        SpawnItem();
-        CountItemsInCrates();
-
-        if (itemsInCrate + floor.ItemsOnFloor() >= 12) GameOver();
-        else UpdateScreenText(); // Format screen on text while game is going
-
+        if (totalReqs == 0){
+             GameOver(); 
+             return;
+        }
         UpdateHandDistance();
-
-        spawnTime += Time.deltaTime;
+        text.text = fruitsReq + " Fruits needed\n" +
+        vegReq + " Vegetables needed\n" + 
+        dairyReq + " Dairy items needed\n" +
+        "\nTime: " + totalTime.ToString("F1");
         totalTime += Time.deltaTime;
+        UpdateRequirements();
     }
+
+    void UpdateRequirements(){
+
+        foreach(GameObject item in basket.GetItemsInCrate()){
+            switch (item.tag)
+            {
+                case "Fruit":
+                if (fruitsReq > 0) {
+                    fruitsReq--;
+                    basket.GotCorrectItem();
+                }
+                else basket.GotIncorrectItem();
+                break;
+
+                case "Dairy":
+                if (dairyReq > 0) {
+                    dairyReq--;
+                    basket.GotCorrectItem();
+                }
+                else basket.GotIncorrectItem();
+                break;
+
+                case "Vegetable":
+                if (vegReq > 0) {
+                    vegReq--;
+                    basket.GotCorrectItem();
+                }
+                else basket.GotIncorrectItem();
+                break;
+
+                default:
+                break;
+            }
+        }
+
+        basket.ClearItems();
+        totalReqs = fruitsReq + dairyReq + vegReq;
+    }
+
 
     void UpdateHandDistance()
     {
-        if (leftHandPrevPos == null && rightHandPrevPos == null)
-        {
-            leftHandPrevPos = leftHandAnchor.transform.position;
-            leftStartPos = leftHandPrevPos;
+        Vector3 leftHandTempMax, rightHandTempMax;
 
-            rightHandPrevPos = rightHandAnchor.transform.position;
-            rightStartPos = rightHandPrevPos;
-            return;
-        }
+        leftHandDist  += leftHand.transform.position - leftHandPrevPos;
+        rightHandDist += rightHand.transform.position - rightHandPrevPos;
 
-        // Calculate distance between current pos and previous pos
-        float leftTempDistance = Vector3.Distance(leftHandAnchor.transform.position, leftHandPrevPos);
-        float rightTempDistance = Vector3.Distance(rightHandAnchor.transform.position, rightHandPrevPos);
-        float totalTempDistance = leftTempDistance + rightTempDistance;
-        totalHandDistance += totalTempDistance;
+        leftHandTempMax = leftHand.transform.position - leftHandStartPos;
+        if (leftHandTempMax.x > leftHandMaxDist.x) leftHandMaxDist.x = leftHandTempMax.x;
+        if (leftHandTempMax.y > leftHandMaxDist.y) leftHandMaxDist.y = leftHandTempMax.y;
+        if (leftHandTempMax.z > leftHandMaxDist.z) leftHandMaxDist.z = leftHandTempMax.z;
 
-        // Calculate distance from current pos and starting pos (for max dist reached)
-        leftTempDistance = Vector3.Distance(leftHandAnchor.transform.position, leftStartPos);
-        rightTempDistance = Vector3.Distance(rightHandAnchor.transform.position, rightStartPos);
-        totalTempDistance = leftTempDistance + rightTempDistance;
-        if (totalTempDistance > maxDistance) maxDistance = totalTempDistance;
+        rightHandTempMax = rightHand.transform.position - rightHandStartPos;
+        if (rightHandTempMax.x > rightHandMaxDist.x) rightHandMaxDist.x = rightHandTempMax.x;
+        if (rightHandTempMax.y > rightHandMaxDist.y) rightHandMaxDist.y = rightHandTempMax.y;
+        if (rightHandTempMax.z > rightHandMaxDist.z) rightHandMaxDist.z = rightHandTempMax.z;
 
-        leftHandPrevPos = leftHandAnchor.transform.position;
-        rightHandPrevPos = rightHandAnchor.transform.position;
-    }
-
-    void UpdateScreenText()
-    {
-        scoreTMP.text = "Items spawned: " + itemsSpawned.ToString() + 
-            "\n Items in crates or floor: " + itemsInCrate;
-    }
-
-    void CountItemsInCrates()
-    {
-        int totalItems = 0;
-        foreach (Crate crate in crates) totalItems += crate.GetNumOfItemsInCrate();
-        itemsInCrate = totalItems;
-    }
-
-    void SpawnItem()
-    {
-        // Too early to spawn new item
-        if (spawnTime < spawnDelay || itemsSpawned >= 12) return;
-
-        // Pick random item to spawn
-        int randomIndex = Random.Range(0, 1000) % items.Length;
-        GameObject itemToSpawn = items[randomIndex];
-        Instantiate(itemToSpawn, fruitSpawnPoint.transform.position, itemToSpawn.transform.rotation);
-        itemsSpawned++;
-        spawnTime = 0.0f;
-    }
-
-    //Randomize what crates will hold what items (missing: tags displayed above crates)
-    void ShuffleTags()
-    {
-        for(int i = 0; i < tags.Length; i++)
-        {
-            int j = Random.Range(0, tags.Length);
-            string hold = tags[i];
-            tags[i] = tags[j];
-            tags[j] = hold;
-        }
-
-        for (int i = 0; i < 3; i++)
-        {
-            crates[i].UpdateTagText(tags[i]);
-        }
-
+        leftHandPrevPos = leftHand.transform.position;
+        rightHandPrevPos = rightHand.transform.position;
     }
 
     void GameOver()
     {
-        gameOver = true;
+        Time.timeScale = 0f;
 
-        // Cognitive measurments (missing number of interactions)
-        float score = 0;
-        int incorrect = 0; // useful?
-        float accuracy;
-        int itemsOnFloor = floor.ItemsOnFloor();
-
-        foreach(Crate crate in crates)
-        {
-            score += crate.GetCorrectItemScore();
-            incorrect += crate.GetIncorrectItemScore();
-        }
-
-        accuracy = (score / itemsSpawned) * 100f;
-
-        float avgHandSpeed = totalHandDistance / totalTime;
-
-        // Format string with statistics
-        scoreTMP.text = "Score: " + score.ToString();
-        scoreTMP.text += "\nAccuracy: " + accuracy.ToString() + "%";
-        scoreTMP.text += "\n Items dropped: " + itemsOnFloor.ToString();
-        scoreTMP.text += "\n interactions: " + interactions.ToString();
-        scoreTMP.text += "\n Avg Hand Speed: " + avgHandSpeed.ToString();
-        scoreTMP.text += "\n Total Distance: " + totalHandDistance.ToString();
-        scoreTMP.text += "\n Max Distance Reached: " + maxDistance.ToString();
-        scoreTMP.fontSize = 6f;
+        Vector3 leftHandAvgSpeed = leftHandDist / totalTime;
+        Vector3 rightHandAvgSpeed = rightHandDist / totalTime;
 
 
-        // Game visuals for game over (missing UI to restart)
-        belt.gameObject.SetActive(false);
-        foreach (Crate crate in crates)
-        {
-            crate.DestroyItems();
-            crate.gameObject.SetActive(false);
-        }
+        /*
+        Available metrics:
 
-        // place restart sphere where the middle crate was
-        restartSphere.transform.position = crates[1].transform.position + new Vector3(0, .1f, .1f);
+        - For each hand
+            - Avg Hand speed, 3D
+            - Avg Path length between each object release, 3D
+            - Total distance, 3D
+        - Total time
+        - Shelves reached (green for object grabbed from the shelf, red for no object reached from that shelf)
+        - Grabbing and placement accuracy (%)
+
+        */
+
+
+
+
+        text.text = "Total time: " + totalTime;
     }
 
-    // Called from Custom Grabber
-    public void AddInteraction()
-    {
-        interactions++;
-    }
+
 
 
 
