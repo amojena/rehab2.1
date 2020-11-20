@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class SceneController : MonoBehaviour
 {
@@ -14,6 +15,15 @@ public class SceneController : MonoBehaviour
     [SerializeField]
     Basket basket;
 
+    [SerializeField]
+    GameObject table, startOfTable, endOfTable;
+
+    [SerializeField]
+    TextMeshPro leftHandText, rightHandText;
+
+    [SerializeField]
+    GameObject basketResetText;
+
     Vector3 leftHandStartPos, rightHandStartPos;
     Vector3 leftHandPrevPos, rightHandPrevPos;
     Vector3 leftHandDist, rightHandDist;
@@ -22,6 +32,10 @@ public class SceneController : MonoBehaviour
     int fruitsReq, vegReq, dairyReq, totalReqs;
 
     float totalTime;
+
+    bool gameOver;
+
+    float correctInteracton, incorrectInteraction;
 
     // Start is called before the first frame update
     void Start()
@@ -38,58 +52,85 @@ public class SceneController : MonoBehaviour
         leftHandMaxDist = Vector3.zero;
         rightHandMaxDist = Vector3.zero;  
 
-        fruitsReq = Random.Range(0, 4);
-        dairyReq = Random.Range(0, 4);
-        vegReq = Random.Range(0, 4);
+        fruitsReq = Random.Range(1, 4);
+        dairyReq = Random.Range(1, 4);
+        vegReq = Random.Range(1, 4);
         totalReqs = fruitsReq + dairyReq + vegReq;
         basket.UpdateRequirements(new Vector3(fruitsReq, dairyReq, vegReq));
 
         totalTime = 0f;
+        gameOver = false;
+        correctInteracton = 0;
+        incorrectInteraction = 0;
+        text.text = "Adjust table to desired height.\nGrab the crate to begin.";
     }
 
     // Update is called once per frame
     void Update()
     {
+        table.transform.rotation = Quaternion.Euler(Vector3.zero);
+        if (!basket.ReadyToStart()) return;
         if (totalReqs == 0){
              GameOver(); 
              return;
         }
         UpdateHandDistance();
+        UpdateText();
+        totalTime += Time.deltaTime;
+        UpdateRequirements();
+        UpdateBasketPos();
+    }
+
+    void UpdateBasketPos(){
+        basket.transform.position = Vector3.Lerp(basket.transform.position, endOfTable.transform.position, Time.deltaTime * .02f);
+    }
+
+    void UpdateText(){
+
         text.text = fruitsReq + " Fruits needed\n" +
         vegReq + " Vegetables needed\n" + 
         dairyReq + " Dairy items needed\n" +
         "\nTime: " + totalTime.ToString("F1");
-        totalTime += Time.deltaTime;
-        UpdateRequirements();
     }
-
     void UpdateRequirements(){
 
-        foreach(GameObject item in basket.GetItemsInCrate()){
-            switch (item.tag)
+        foreach(string item in basket.GetItemsInCrate()){
+            switch (item)
             {
                 case "Fruit":
                 if (fruitsReq > 0) {
                     fruitsReq--;
+                    correctInteracton++;
                     basket.GotCorrectItem();
                 }
-                else basket.GotIncorrectItem();
+                else {
+                    incorrectInteraction++;
+                    basket.GotIncorrectItem();
+                }
                 break;
 
                 case "Dairy":
                 if (dairyReq > 0) {
                     dairyReq--;
+                    correctInteracton++;
                     basket.GotCorrectItem();
                 }
-                else basket.GotIncorrectItem();
+                else {
+                    incorrectInteraction++;
+                    basket.GotIncorrectItem();
+                }
                 break;
 
                 case "Vegetable":
                 if (vegReq > 0) {
                     vegReq--;
+                    correctInteracton++;
                     basket.GotCorrectItem();
                 }
-                else basket.GotIncorrectItem();
+                else {
+                    incorrectInteraction++;
+                    basket.GotIncorrectItem();
+                }
                 break;
 
                 default:
@@ -123,14 +164,18 @@ public class SceneController : MonoBehaviour
         rightHandPrevPos = rightHand.transform.position;
     }
 
+
+    bool IsCrateGrabbed(){ return basket.GetComponent<OVRGrabbable>().isGrabbed; }
+
+    Vector3 GetAbsoluteVector(Vector3 vector){
+        if (vector.x < 0) vector.x *= -1;
+        if (vector.y < 0) vector.y *= -1;
+        if (vector.z < 0) vector.z *= -1;
+        return vector;
+    }
+
     void GameOver()
     {
-        Time.timeScale = 0f;
-
-        Vector3 leftHandAvgSpeed = leftHandDist / totalTime;
-        Vector3 rightHandAvgSpeed = rightHandDist / totalTime;
-
-
         /*
         Available metrics:
 
@@ -143,11 +188,34 @@ public class SceneController : MonoBehaviour
         - Grabbing and placement accuracy (%)
 
         */
+        
+        Vector3 leftHandAvgSpeed = leftHandDist / totalTime;
+        Vector3 rightHandAvgSpeed = rightHandDist / totalTime;
+
+        leftHandText.text = "Average Hand Speed (m/s): " + GetAbsoluteVector(leftHandAvgSpeed);
+        leftHandText.text += "\n Total Distance: (m): " + GetAbsoluteVector(leftHandDist);
+        leftHandText.text += "\n Maximum Distance Reached: (m): " + GetAbsoluteVector(leftHandMaxDist);
+        // Missing path length when grabbing an object
+        
+        rightHandText.text = "Average Hand Speed (m/s): " + GetAbsoluteVector(rightHandAvgSpeed);
+        rightHandText.text += "\n Total Distance: (m): " + GetAbsoluteVector(rightHandDist);
+        rightHandText.text += "\n Maximum Distance Reached: (m): " + GetAbsoluteVector(rightHandMaxDist);
+        // Missing path length when grabbing an object
+
+        leftHandText.gameObject.SetActive(true);
+        rightHandText.gameObject.SetActive(true);
+
+        if (!gameOver) text.gameObject.transform.position = text.gameObject.transform.position + new Vector3(0,-.35f,0);
+
+        float accuracy = correctInteracton / (correctInteracton + incorrectInteraction);
+        text.text = "Total time: " + totalTime.ToString("F2");
+        text.text += "\nSuccessful interactions: " + (accuracy*100).ToString("F2") + "%";
+
+        basketResetText.SetActive(true);
 
 
-
-
-        text.text = "Total time: " + totalTime;
+        if(IsCrateGrabbed()) SceneManager.LoadScene("PantryScene", LoadSceneMode.Single);
+        gameOver = true;
     }
 
 

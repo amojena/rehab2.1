@@ -11,13 +11,12 @@ public class ItemSpawner : MonoBehaviour
     void Start()
     {
         GameObject item = items[Random.Range(0, items.Length)];
+        Quaternion tempRot = item.transform.rotation;
 
         if (transform.parent.gameObject.CompareTag("Right Wall") && item.name.StartsWith("Milk")){
-            Quaternion tempRot = item.transform.rotation;
-            tempRot.y *= -1;
-            item.transform.rotation = tempRot;
+            tempRot.y += 180;
         }
 
-        Instantiate(item, transform.position, item.transform.rotation);
+        Instantiate(item, transform.position, tempRot);
     }
 }

@@ -92,6 +92,8 @@ GameObject:
   - component: {fileID: 559113811}
   - component: {fileID: 4910183991209549272}
   - component: {fileID: -4395393420599876420}
+  - component: {fileID: 4231893104081796731}
+  - component: {fileID: -6773900214635268771}
   m_Layer: 0
   m_Name: Apple
   m_TagString: Fruit
@@ -107,7 +109,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5675255079360671581}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 9.31327e-10, y: 0.64000225, z: -8.130963}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1.5, y: 1.5, z: 1.5}
   m_Children:
   - {fileID: 5675255079360377727}
@@ -170,10 +172,35 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_allowOffhandGrab: 1
-  m_snapPosition: 1
+  m_snapPosition: 0
   m_snapOrientation: 0
   m_snapOffset: {fileID: 0}
   m_grabPoints: []
+--- !u!65 &4231893104081796731
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5675255079360671581}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 0
+  serializedVersion: 2
+  m_Size: {x: 0.07, y: 0.07, z: 0.07}
+  m_Center: {x: 0, y: 0.03, z: 0}
+--- !u!114 &-6773900214635268771
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5675255079360671581}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0da5e7d668d537249be2fb8065387813, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &5675255079360671583
 GameObject:
   m_ObjectHideFlags: 0

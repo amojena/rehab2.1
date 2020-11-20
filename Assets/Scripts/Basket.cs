@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Basket : MonoBehaviour
 {
-    List<GameObject> items;
+    List<string> items;
     Quaternion startRot;
     int fruitReq;
     int dairyReq;
@@ -14,34 +14,49 @@ public class Basket : MonoBehaviour
 
     AudioSource[] audioSources;
 
+    bool readyToStart;
+
+    [SerializeField]
+    GameObject startPos;
+
 
 
     // Start is called before the first frame update
     void Start()
     {
-        items = new List<GameObject>();
+        items = new List<string>();
         startRot = transform.rotation;
         origColor = GetComponent<MeshRenderer>().material.color;
         audioSources = GetComponents<AudioSource>();
+        readyToStart = false;
+        
     }
 
     // Update is called once per frame
     void Update()
     {
         // Maintain starting rotation at all times
+        if (!readyToStart && GetComponent<OVRGrabbable>().isGrabbed) {
+            readyToStart = true;
+            transform.position = startPos.transform.position;
+        }
         transform.rotation = startRot;
     }
 
-    private void OnCollisionEnter(Collision collision) { items.Add(collision.gameObject); }
+    private void OnCollisionEnter(Collision collision) { 
+        if (!readyToStart){ return; }
 
-    public List<GameObject> GetItemsInCrate(){ return items; }
+        items.Add(collision.gameObject.tag); 
+    }
+
+    public bool ReadyToStart() { return readyToStart; }
+    public List<string> GetItemsInCrate(){ return items; }
 
     public void ClearItems(){ 
 
         while (items.Count > 0){
-            GameObject toDestroy = items[items.Count-1];
+            string toDestroy = items[items.Count-1];
             items.Remove(toDestroy);
-            Destroy(toDestroy);
         }
     }
 

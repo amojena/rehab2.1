@@ -15,6 +15,8 @@ GameObject:
   - component: {fileID: -5263063667033420883}
   - component: {fileID: -6407708109292601817}
   - component: {fileID: -6628001779778194577}
+  - component: {fileID: 6928238779473609302}
+  - component: {fileID: 9160678873787830204}
   m_Layer: 0
   m_Name: Onion
   m_TagString: Vegetable
@@ -30,7 +32,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2857886671042808511}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.04312545, y: 0.6849332, z: -8.130945}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 2, y: 2, z: 2}
   m_Children: []
   m_Father: {fileID: 0}
@@ -105,7 +107,7 @@ SphereCollider:
   m_GameObject: {fileID: 2857886671042808511}
   m_Material: {fileID: 0}
   m_IsTrigger: 1
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 2
   m_Radius: 0.022923455
   m_Center: {x: -0.00000006798655, y: 0.02, z: -0.000000033527613}
@@ -138,8 +140,33 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_allowOffhandGrab: 1
-  m_snapPosition: 1
+  m_snapPosition: 0
   m_snapOrientation: 0
   m_snapOffset: {fileID: 0}
   m_grabPoints:
   - {fileID: 2857886671042841629}
+--- !u!65 &6928238779473609302
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2857886671042808511}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 0
+  serializedVersion: 2
+  m_Size: {x: 0.040216453, y: 0.04584691, z: 0.040216453}
+  m_Center: {x: -0.00000006798655, y: 0.02316174, z: -0.000000033527613}
+--- !u!114 &9160678873787830204
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2857886671042808511}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0da5e7d668d537249be2fb8065387813, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
