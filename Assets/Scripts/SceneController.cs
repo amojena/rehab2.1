@@ -19,7 +19,7 @@ public class SceneController : MonoBehaviour
     GameObject table, startOfTable, endOfTable;
 
     [SerializeField]
-    TextMeshPro leftHandText, rightHandText;
+    TextMeshPro leftHandText, rightHandText, bottomHandText;
 
     [SerializeField]
     GameObject basketResetText;
@@ -37,9 +37,12 @@ public class SceneController : MonoBehaviour
 
     float correctInteracton, incorrectInteraction;
 
+    List<GameObject> itemsInGame;
+
     // Start is called before the first frame update
     void Start()
     {
+        itemsInGame = new List<GameObject>();
         leftHandStartPos = leftHand.transform.position;
         rightHandStartPos = rightHand.transform.position;
 
@@ -81,6 +84,8 @@ public class SceneController : MonoBehaviour
         UpdateBasketPos();
     }
 
+    public void AddToScene(GameObject item) {itemsInGame.Add(item);}
+
     void UpdateBasketPos(){
         basket.transform.position = Vector3.Lerp(basket.transform.position, endOfTable.transform.position, Time.deltaTime * .02f);
     }
@@ -95,6 +100,7 @@ public class SceneController : MonoBehaviour
     void UpdateRequirements(){
 
         foreach(string item in basket.GetItemsInCrate()){
+            // item = tag of gameobject
             switch (item)
             {
                 case "Fruit":
@@ -208,8 +214,11 @@ public class SceneController : MonoBehaviour
         if (!gameOver) text.gameObject.transform.position = text.gameObject.transform.position + new Vector3(0,-.35f,0);
 
         float accuracy = correctInteracton / (correctInteracton + incorrectInteraction);
-        text.text = "Total time: " + totalTime.ToString("F2");
-        text.text += "\nSuccessful interactions: " + (accuracy*100).ToString("F2") + "%";
+        bottomHandText.text = "Total time: " + totalTime.ToString("F2");
+        bottomHandText.text += "\nSuccessful interactions: " + (accuracy*100).ToString("F2") + "%";
+        bottomHandText.gameObject.SetActive(true);
+
+        text.gameObject.SetActive(false);
 
         basketResetText.SetActive(true);
 

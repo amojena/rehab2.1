@@ -59,6 +59,7 @@ MeshRenderer:
   m_RendererPriority: 0
   m_Materials:
   - {fileID: 2100000, guid: fd84161baee1c8447a56f61f2c071246, type: 2}
+  - {fileID: 2100000, guid: 33d6672e3bb687d4b8629c431c8e500c, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -92,7 +93,6 @@ GameObject:
   - component: {fileID: 559113811}
   - component: {fileID: 4910183991209549272}
   - component: {fileID: -4395393420599876420}
-  - component: {fileID: 4231893104081796731}
   - component: {fileID: -6773900214635268771}
   m_Layer: 0
   m_Name: Apple
@@ -176,19 +176,6 @@ MonoBehaviour:
   m_snapOrientation: 0
   m_snapOffset: {fileID: 0}
   m_grabPoints: []
---- !u!65 &4231893104081796731
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5675255079360671581}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 0
-  serializedVersion: 2
-  m_Size: {x: 0.07, y: 0.07, z: 0.07}
-  m_Center: {x: 0, y: 0.03, z: 0}
 --- !u!114 &-6773900214635268771
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -201,6 +188,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0da5e7d668d537249be2fb8065387813, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  meshRenderer: {fileID: 5675255079362671001}
 --- !u!1 &5675255079360671583
 GameObject:
   m_ObjectHideFlags: 0
