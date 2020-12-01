@@ -14,27 +14,65 @@ public class HelpButton : MonoBehaviour
     TextMeshPro debugText;
     Vector3 startPos;
     Quaternion startRot;
+    TextMeshPro helpText;
+
+    float waitTimer;
+    bool timer = false;
+
+    int timesNeeded = 0;
+    Basket basket;
 
     // Start is called before the first frame update
     void Start()
     {
-        GetComponent<MeshRenderer>().material.color = Color.green;
+        GetComponent<MeshRenderer>().material.color = Color.red;
+        helpText = GetComponentInChildren<TextMeshPro>();
         startPos = transform.position;
         startRot = transform.rotation;
+        waitTimer = 0f;
+        basket = GameObject.Find("Basket").GetComponent<Basket>();
     }
 
     // Update is called once per frame
     void Update()
     {
         transform.rotation = startRot;
-        transform.position = new Vector3(startPos.x, transform.position.y, startPos.z);
+        transform.position = startPos;
+
+        if (timer)
+        {
+            waitTimer += Time.deltaTime;
+            helpText.text = (5f - waitTimer).ToString("F2");
+        }
+
+        if (waitTimer >= 5f) {
+            timer = false;
+            needed = false;
+            waitTimer = 0f;
+            GetComponent<MeshRenderer>().material.color = red;
+            helpText.text = "HELP";
+
+        }
     }
 
-    private void OnCollisionEnter(Collision collision){
-        
-        debugText.text = collision.gameObject.name;
-        Color currColor = GetComponent<MeshRenderer>().material.color;
-        GetComponent<MeshRenderer>().material.color = currColor == green ? red : green; 
-        needed = !needed;
+    public int GetTimesNeeded() { return timesNeeded;  }
+
+
+
+    private void OnCollisionExit(Collision collision){
+        // game has not started
+        if (!basket.ReadyToStart()) return;
+        // platform on which button stands collision
+
+        if (collision.gameObject.name.Equals("Platform")) return;
+        // visual cue cooldown
+
+        if (timer) return;
+
+       
+        GetComponent<MeshRenderer>().material.color = green;
+        needed = true;
+        timer = true;
+        timesNeeded++;
     }
 }

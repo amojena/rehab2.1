@@ -29,7 +29,6 @@ public class Basket : MonoBehaviour
         origColor = GetComponent<MeshRenderer>().material.color;
         audioSources = GetComponents<AudioSource>();
         readyToStart = false;
-        
     }
 
     // Update is called once per frame
@@ -38,7 +37,7 @@ public class Basket : MonoBehaviour
         // Maintain starting rotation at all times
         if (!readyToStart && GetComponent<OVRGrabbable>().isGrabbed) {
             readyToStart = true;
-            transform.position = startPos.transform.position;
+            //transform.position = startPos.transform.position;
         }
         transform.rotation = startRot;
     }
