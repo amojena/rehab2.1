@@ -16,8 +16,8 @@ public class Basket : MonoBehaviour
 
     bool readyToStart;
 
-    [SerializeField]
-    GameObject startPos;
+
+    SceneController sceneController;
 
 
 
@@ -29,6 +29,7 @@ public class Basket : MonoBehaviour
         origColor = GetComponent<MeshRenderer>().material.color;
         audioSources = GetComponents<AudioSource>();
         readyToStart = false;
+        sceneController = GameObject.Find("SceneController").GetComponent<SceneController>();
     }
 
     // Update is called once per frame
@@ -45,7 +46,8 @@ public class Basket : MonoBehaviour
     private void OnCollisionEnter(Collision collision) { 
         if (!readyToStart){ return; }
 
-        items.Add(collision.gameObject.tag); 
+        items.Add(collision.gameObject.tag);
+        sceneController.ItemDroppedInBasket(collision.gameObject.GetComponent<Item>());
     }
 
     public bool ReadyToStart() { return readyToStart; }

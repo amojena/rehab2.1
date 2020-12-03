@@ -27,38 +27,40 @@ public class SceneController : MonoBehaviour
     [SerializeField]
     HelpButton helpButton;
 
+
     Vector3 leftHandStartPos, rightHandStartPos;
     Vector3 leftHandPrevPos, rightHandPrevPos;
-    Vector3 leftHandDist, rightHandDist;
+    float leftHandDist, rightHandDist;
     Vector3 leftHandMaxDist, rightHandMaxDist;
 
     int fruitsReq, vegReq, dairyReq, totalReqs;
 
     float totalTime;
 
-    bool gameOver;
 
     float correctInteracton, incorrectInteraction;
 
-    List<GameObject> itemsInGame;
+    List<Item> itemsInGame;
 
-    OVRGrabber leftHandOVR, rightHandOVR;
-
-    Vector3 leftDistWhileGrabbing, rightDistWhileGrabbing;
-    float timeGrabbing = 0f;
+    int itemsGrabbed = 0;
+    float relPathLength = 0f;
+    float leftDistWhileGrabbing = 0f;
+    float rightDistWhileGrabbing = 0f;
+    int grabbedByLeft = 0;
+    int grabbedByRight = 0;
 
     // Start is called before the first frame update
     void Start()
     {
-        itemsInGame = new List<GameObject>();
+        itemsInGame = new List<Item>();
         leftHandStartPos = leftHand.transform.position;
         rightHandStartPos = rightHand.transform.position;
 
         leftHandPrevPos = leftHandStartPos;
         rightHandPrevPos = rightHandStartPos;
 
-        leftHandDist = Vector3.zero;
-        rightHandDist = Vector3.zero;  
+        leftHandDist = 0f;
+        rightHandDist = 0f;  
 
         leftHandMaxDist = Vector3.zero;
         rightHandMaxDist = Vector3.zero;  
@@ -70,13 +72,9 @@ public class SceneController : MonoBehaviour
         basket.UpdateRequirements(new Vector3(fruitsReq, dairyReq, vegReq));
 
         totalTime = 0f;
-        gameOver = false;
         correctInteracton = 0;
         incorrectInteraction = 0;
         text.text = "Adjust table to desired height.\nGrab the crate to begin.";
-
-        leftHandOVR = GameObject.Find("CustomHandLeft").GetComponent<OVRGrabber>();
-        rightHandOVR = GameObject.Find("CustomHandRight").GetComponent<OVRGrabber>();
     }
 
     // Update is called once per frame
@@ -92,14 +90,9 @@ public class SceneController : MonoBehaviour
         UpdateText();
         totalTime += Time.deltaTime;
         UpdateRequirements();
-        //UpdateBasketPos();
     }
 
-    public void AddToScene(GameObject item) {itemsInGame.Add(item);}
-
-    void UpdateBasketPos(){
-        basket.transform.position = Vector3.Lerp(basket.transform.position, endOfTable.transform.position, Time.deltaTime * .02f);
-    }
+    public void AddToScene(Item item) {itemsInGame.Add(item);}
 
     void UpdateText(){
 
@@ -108,6 +101,7 @@ public class SceneController : MonoBehaviour
         dairyReq + " Dairy items needed\n" +
         "\nTime: " + totalTime.ToString("F1");
     }
+
     void UpdateRequirements(){
 
         foreach(string item in basket.GetItemsInCrate()){
@@ -163,9 +157,13 @@ public class SceneController : MonoBehaviour
     void UpdateHandDistance()
     {
         Vector3 leftHandTempMax, rightHandTempMax;
+        float leftTempDist, rightTempDist;
 
-        leftHandDist  += GetAbsoluteVector(leftHand.transform.position - leftHandPrevPos);
-        rightHandDist += GetAbsoluteVector(rightHand.transform.position - rightHandPrevPos);
+        leftTempDist = Mathf.Abs(Vector3.Distance(leftHand.transform.position, leftHandPrevPos));
+        rightTempDist = Mathf.Abs(Vector3.Distance(rightHand.transform.position, rightHandPrevPos));
+
+        leftHandDist += leftTempDist;
+        rightHandDist += rightTempDist;
 
         leftHandTempMax = GetAbsoluteVector(leftHand.transform.position - leftHandStartPos);
         if (leftHandTempMax.x > leftHandMaxDist.x) leftHandMaxDist.x = leftHandTempMax.x;
@@ -177,38 +175,16 @@ public class SceneController : MonoBehaviour
         if (rightHandTempMax.y > rightHandMaxDist.y) rightHandMaxDist.y = rightHandTempMax.y;
         if (rightHandTempMax.z > rightHandMaxDist.z) rightHandMaxDist.z = rightHandTempMax.z;
 
-
-        if (leftHandOVR.grabbedObject != null)
-        {
-            leftDistWhileGrabbing += GetAbsoluteVector(leftHand.transform.position - leftHandPrevPos);
-            timeGrabbing += Time.deltaTime;
-        }
-
-        if (rightHandOVR.grabbedObject != null)
-        {
-            rightDistWhileGrabbing += GetAbsoluteVector(rightHand.transform.position - rightHandPrevPos);
-            timeGrabbing += Time.deltaTime;
-        }
-
-
-
         leftHandPrevPos = leftHand.transform.position;
         rightHandPrevPos = rightHand.transform.position;
     }
 
     public int GetRequirement(string itemType)
     {
-       switch (itemType)
-        {
-            case "Fruit":
-                return fruitsReq;
-            case "Vegetable":
-                return vegReq;
-            case "Dairy":
-                return dairyReq;
-            default:
-                return -1;
-        }
+        if (itemType.Equals("Fruit")) return fruitsReq;
+        else if (itemType.Equals("Vegetable")) return vegReq;
+        else if (itemType.Equals("Dairy")) return dairyReq;
+        else return -1;
     }
 
     bool IsCrateGrabbed(){ return basket.GetComponent<OVRGrabbable>().isGrabbed; }
@@ -220,59 +196,55 @@ public class SceneController : MonoBehaviour
         return vector;
     }
 
-    Vector3 DivideVectors(Vector3 a, Vector3 b)
-    {
-        Vector3 aa = GetAbsoluteVector(a);
-        Vector3 bb = GetAbsoluteVector(b);
-        return new Vector3(aa.x / bb.x, aa.y / bb.y, aa.z / bb.z);
-    }
+    string VectorToString(Vector3 v) { return "(" + v.x.ToString("F2") + "m " + v.y.ToString("F2") + "m " + v.z.ToString("F2") + "m)";  }
 
+    public void ItemDroppedInBasket(Item item)
+    { 
+        if (item.grabbedBy.Equals("CustomHandLeft"))
+        {
+            leftDistWhileGrabbing += item.distanceTraveled;
+            grabbedByLeft++;
+        }
+        else if (item.grabbedBy.Equals("CustomHandRight"))
+        {
+            rightDistWhileGrabbing += item.distanceTraveled;
+            grabbedByRight++;
+        }
+
+    }
     void GameOver()
     {
-        /*
-        Available metrics:
 
-        - For each hand
-            - Avg Hand speed, 3D
-            - Avg Path length when grabbing object, 3D
-            - Total distance, 3D
-        - Total time
-        - Grabbing and placement accuracy (%)
-        - # of times visual cues were needed
+        float leftHandAvgSpeed = leftHandDist / totalTime;
+        float rightHandAvgSpeed = rightHandDist / totalTime;
 
-        */
+        leftHandText.text = "Avg Hand Speed: " + leftHandAvgSpeed.ToString("F2") + "m/s";
+        leftHandText.text += "\n Distance Traveled: " + leftHandDist.ToString("F2") + "m";
+        leftHandText.text += "\n Maximum Distance Reached: (m): " + VectorToString(GetAbsoluteVector(leftHandMaxDist));
+        leftHandText.text += "\n Average relative path length: " + (leftDistWhileGrabbing/grabbedByLeft).ToString("F2") + "m";
 
-        Vector3 leftHandAvgSpeed = leftHandDist / totalTime;
-        Vector3 rightHandAvgSpeed = rightHandDist / totalTime;
-
-        leftHandText.text = "Average Hand Speed (m/s): " + GetAbsoluteVector(leftHandAvgSpeed);
-        leftHandText.text += "\n Total Distance: (m): " + GetAbsoluteVector(leftHandDist);
-        leftHandText.text += "\n Maximum Distance Reached: (m): " + GetAbsoluteVector(leftHandMaxDist);
-        leftHandText.text += "\n Average path length (m): " + DivideVectors(leftDistWhileGrabbing, leftHandDist);
-        
-        rightHandText.text = "Average Hand Speed (m/s): " + GetAbsoluteVector(rightHandAvgSpeed);
-        rightHandText.text += "\n Total Distance: (m): " + GetAbsoluteVector(rightHandDist);
-        rightHandText.text += "\n Maximum Distance Reached: (m): " + GetAbsoluteVector(rightHandMaxDist);
-        rightHandText.text += "\n Average path length (m): " + DivideVectors(rightDistWhileGrabbing, rightHandDist);
+        rightHandText.text = "Avg Hand Speed: " + rightHandAvgSpeed.ToString("F2") + "m/s";
+        rightHandText.text += "\n Distance Traveled: " + rightHandDist.ToString("F2") + "m";
+        rightHandText.text += "\n Maximum Distance Reached: (m): " + VectorToString(GetAbsoluteVector(rightHandMaxDist));
+        rightHandText.text += "\n Avg relative path length: " + (rightDistWhileGrabbing / grabbedByRight).ToString("F2") + "m";
 
         leftHandText.gameObject.SetActive(true);
         rightHandText.gameObject.SetActive(true);
 
-        if (!gameOver) text.gameObject.transform.position = text.gameObject.transform.position + new Vector3(0,-.35f,0);
+        relPathLength = leftDistWhileGrabbing + rightDistWhileGrabbing;
+        relPathLength /= (grabbedByLeft + grabbedByRight);
 
-        float accuracy = correctInteracton / (correctInteracton + incorrectInteraction);
+        float accuracy = correctInteracton / (correctInteracton + incorrectInteraction);     
         bottomHandText.text = "Total time: " + totalTime.ToString("F2");
         bottomHandText.text += "\nSuccessful interactions: " + (accuracy*100).ToString("F2") + "%";
         bottomHandText.text += "\nVisual cues used: " + helpButton.GetTimesNeeded().ToString();
+        bottomHandText.text += "\n Avg relative Path Length: " + relPathLength.ToString("F2");
         bottomHandText.gameObject.SetActive(true);
 
         text.gameObject.SetActive(false);
-
         basketResetText.SetActive(true);
 
-
         if(IsCrateGrabbed()) SceneManager.LoadScene("PantryScene", LoadSceneMode.Single);
-        gameOver = true;
     }
 
 
